@@ -1,56 +1,49 @@
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 public class MHLoader {
-
     public static class Loaded {
         public final ABB<MHRecord> abb;
         public final AVL avl;
-        public final List<MHRecord> records; // to allow search experiments
-        public Loaded(ABB<MHRecord> abb, AVL avl, List<MHRecord> records){
-            this.abb = abb; this.avl = avl; this.records = records;
+        public final java.util.List<MHRecord> records;
+        public final long compsABB_insert, compsAVL_insert, rotSingle_insert, rotEvents_insert;
+        public Loaded(ABB<MHRecord> a, AVL v, java.util.List<MHRecord> r, long cA,long cV,long s,long e){
+            abb=a; avl=v; records=r; compsABB_insert=cA; compsAVL_insert=cV; rotSingle_insert=s; rotEvents_insert=e;
         }
     }
 
     public static Loaded load(String csvPath) throws Exception {
-        AvlMetrics.reset();
+        java.util.List<MHRecord> records = readAll(csvPath);
+        java.util.Collections.shuffle(records,new java.util.Random(42));
+
         ABB<MHRecord> abb = new ABB<>();
-        AVL avl = null;
+        MHRecord.resetCounter();
+        for(MHRecord r:records) ABBUtil.abbInsertIter(abb,r);
+        long cAbb = MHRecord.COMPARE_COUNT;
 
-        List<MHRecord> records = new ArrayList<>(200_000);
-
-        try (BufferedReader br = new BufferedReader(new FileReader(csvPath))) {
-            String header = br.readLine(); // skip header
-            String line;
-            int row = 0;
-            MHRecord first = null;
-            while ((line = br.readLine()) != null) {
-                String[] t = splitCSV(line);
-                if (t.length < 16) continue; // guard
-                MHRecord r = new MHRecord(t, row++);
-                records.add(r);
-
-                // ABB insert via Node
-                Node<MHRecord> node = new Node<>(r);
-                abb.inserir(node, abb.getRaiz());
-
-                // AVL: init once then insert the rest
-                if (first == null) {
-                    first = r;
-                    avl = new AVL(first);
-                } else {
-                    avl.insereAVL(r);
-                }
-            }
+        AvlMetrics.reset();
+        MHRecord.resetCounter();
+        AVL avl=null;
+        for(MHRecord r:records){
+            if(avl==null) avl=new AVL(r); else avl.insereAVL(r);
         }
-        return new Loaded(abb, avl, records);
+        long cAvl=MHRecord.COMPARE_COUNT;
+        long rotS=AvlMetrics.rotationsSingle, rotE=AvlMetrics.rotationsEvents;
+
+        return new Loaded(abb,avl,records,cAbb,cAvl,rotS,rotE);
     }
 
-    // Minimal CSV split (no quoted commas in this dataset)
-    private static String[] splitCSV(String line) {
-        return line.split(",", -1);
+    private static java.util.List<MHRecord> readAll(String csvPath) throws Exception {
+        java.util.List<MHRecord> list=new java.util.ArrayList<>(200000);
+        try(BufferedReader br=new BufferedReader(new FileReader(csvPath))){
+            String header=br.readLine();
+            String line; int row=0;
+            while((line=br.readLine())!=null){
+                String[] t = line.split(",",-1);
+                if(t.length<16) continue;
+                list.add(new MHRecord(t,row++));
+            }
+        }
+        return list;
     }
 }

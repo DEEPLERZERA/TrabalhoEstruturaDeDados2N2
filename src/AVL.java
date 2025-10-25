@@ -55,7 +55,7 @@ public class AVL {
 
     //Rotação Simples para a Direita
     private NoAVL rotacaoSD(NoAVL A) {
-        AvlMetrics.rotationsSingle += 1; AvlMetrics.rotationsEvents += 1;
+        if (A == null) return null; if (A.getEsq() == null) return A; AvlMetrics.rotationsSingle += 1; AvlMetrics.rotationsEvents += 1;
 
         NoAVL B = A.getEsq();
 
@@ -89,7 +89,7 @@ public class AVL {
 
     //Rotação Simples para a Esquerda
     private NoAVL rotacaoSE(NoAVL A) {
-        AvlMetrics.rotationsSingle += 1; AvlMetrics.rotationsEvents += 1;
+        if (A == null) return null; if (A.getDir() == null) return A; AvlMetrics.rotationsSingle += 1; AvlMetrics.rotationsEvents += 1;
 
         NoAVL B = A.getDir();
         //Se não for a raiz, tem um pai
@@ -118,7 +118,7 @@ public class AVL {
 
     //Rotação dupla para a direita
     private NoAVL rotacaoDD(NoAVL A) {
-        AvlMetrics.rotationsSingle += 2; AvlMetrics.rotationsEvents += 1;
+        if (A == null) return null;
 
         rotacaoSE(A.getEsq());
         return (rotacaoSD(A));
@@ -126,7 +126,7 @@ public class AVL {
 
     //Rotação dupla para a esquerda
     private NoAVL rotacaoDE(NoAVL A) {
-        AvlMetrics.rotationsSingle += 2; AvlMetrics.rotationsEvents += 1;
+        if (A == null) return null;
 
         rotacaoSD(A.getDir());
         return (rotacaoSE(A));
@@ -158,12 +158,12 @@ public class AVL {
                             if (raiz.getEsq().getFb() == -1) {
                                 raiz = rotacaoSD(raiz);
                                 raiz.setFb(0);
-                                raiz.getDir().setFb(0);
+                                if (raiz.getDir() != null) if (raiz.getDir() != null) raiz.getDir().setFb(0);
                             }                             
                             else { //Caso contrário a rotação é dupla para a direita
                                 raiz = rotacaoDD(raiz);  //rotacaoDD retorna a nova raiz
-                                raiz.getDir().setFb(0);
-                                raiz.getEsq().setFb(0);
+                                if (raiz.getDir() != null) if (raiz.getDir() != null) raiz.getDir().setFb(0);
+                                if (raiz.getEsq() != null) if (raiz.getEsq() != null) raiz.getEsq().setFb(0);
                                 raiz.setFb(0);
                             }
                             flagInsercao = false;
@@ -188,12 +188,12 @@ public class AVL {
                             if (raiz.getDir().getFb() == 1) {
                                 raiz = rotacaoSE(raiz);
                                 raiz.setFb(0);
-                                raiz.getEsq().setFb(0);
+                                if (raiz.getEsq() != null) if (raiz.getEsq() != null) raiz.getEsq().setFb(0);
                             } 
                             else {  //Caso contrário, rotação dupla para a esquerda
                                 raiz = rotacaoDE(raiz); //rotacaoDE retorna a nova raiz
-                                raiz.getDir().setFb(0);
-                                raiz.getEsq().setFb(0);
+                                if (raiz.getDir() != null) if (raiz.getDir() != null) raiz.getDir().setFb(0);
+                                if (raiz.getEsq() != null) if (raiz.getEsq() != null) raiz.getEsq().setFb(0);
                                 raiz.setFb(0);
                             }
                             flagInsercao = false;
@@ -277,6 +277,14 @@ public class AVL {
 
     //Reorganiza os fatores de balanceamento na remoção
     private NoAVL balanceamentoEsquerdo(NoAVL no) {
+        if (raiz == null) return null;
+        NoAVL CH = raiz.getEsq();
+        if (CH == null) return raiz;
+
+        if (raiz == null) return null;
+        NoAVL E = raiz.getEsq();
+        if (E == null) return raiz;
+
         switch (no.getFb()) {
             case -1: //Se tinha um nó esquerdo, removeu e balanceou
                 no.setFb(0);
@@ -286,31 +294,31 @@ public class AVL {
                 break;
             case 1:  //Se tinha 1 nível a mais à direita, Balanceou
                 NoAVL subDir = no.getDir();
-                int fb = subDir.getFb();
+                int fb = (subDir==null?0:subDir.getFb());
                 if (fb >= 0) {
                     subDir = rotacaoSE(no);
                     if (fb == 0) {
                         no.setFb(1);
-                        subDir.setFb(-1);
+                        if(subDir!=null) subDir.setFb(-1);
                         flagRemove = false;
                     } else {
                         no.setFb(0);
-                        subDir.setFb(0);
+                        if(subDir!=null) subDir.setFb(0);
                     }
                     no = subDir;
                 } else {
                     no = rotacaoDD(no);
                     if (no.getFb() == 0) {
-                        no.getDir().setFb(0);
-                        no.getEsq().setFb(0);
+                        if (raiz.getDir() != null) if (no.getDir() != null) no.getDir().setFb(0);
+                        if (raiz.getEsq() != null) if (no.getEsq() != null) no.getEsq().setFb(0);
                     } else if (no.getFb() == 1) {
                         no.setFb(0);
-                        no.getDir().setFb(0);
-                        no.getEsq().setFb(-1);
+                        if (raiz.getDir() != null) if (no.getDir() != null) no.getDir().setFb(0);
+                        if (raiz.getEsq() != null) if (no.getEsq() != null) no.getEsq().setFb(-1);
                     } else {
                         no.setFb(0);
-                        no.getDir().setFb(1);
-                        no.getEsq().setFb(0);
+                        if (raiz.getDir() != null) if (no.getDir() != null) no.getDir().setFb(1);
+                        if (raiz.getEsq() != null) if (no.getEsq() != null) no.getEsq().setFb(0);
                     }
                 }
         }
@@ -319,6 +327,14 @@ public class AVL {
 
     //Reorganiza os fatores de balanceamento na remoção
     private NoAVL balanceamentoDireito(NoAVL no) {
+        if (raiz == null) return null;
+        NoAVL CH = raiz.getDir();
+        if (CH == null) return raiz;
+
+        if (raiz == null) return null;
+        NoAVL D = raiz.getDir();
+        if (D == null) return raiz;
+
         switch (no.getFb()) {
             case 1: //Se tinha um nó direito, removeu e balanceou
                 no.setFb(0);
@@ -329,31 +345,31 @@ public class AVL {
                 break;
             case -1:  //Se tinha 1 nível a mais à direita, balanceou
                 NoAVL subEsq = no.getEsq();
-                int fb = subEsq.getFb();
+                int fb = (subEsq==null?0:subEsq.getFb());
                 if (fb <= 0) {
                     subEsq = rotacaoSD(no);
                     if (fb == 0) {
                         no.setFb(-1);
-                        subEsq.setFb(1);
+                        if(subEsq!=null) subEsq.setFb(1);
                         flagRemove = false;
                     } else {
                         no.setFb(0);
-                        subEsq.setFb(0);
+                        if(subEsq!=null) subEsq.setFb(0);
                     }
                     no = subEsq;
                 } else {
                     no = rotacaoDE(no);
                     if (no.getFb() == 0) {
-                        no.getDir().setFb(0);
-                        no.getEsq().setFb(0);
+                        if (raiz.getDir() != null) if (no.getDir() != null) no.getDir().setFb(0);
+                        if (raiz.getEsq() != null) if (no.getEsq() != null) no.getEsq().setFb(0);
                     } else if (no.getFb() == -1) {
                         no.setFb(0);
-                        no.getDir().setFb(1);
-                        no.getEsq().setFb(0);
+                        if (raiz.getDir() != null) if (no.getDir() != null) no.getDir().setFb(1);
+                        if (raiz.getEsq() != null) if (no.getEsq() != null) no.getEsq().setFb(0);
                     } else {
                         no.setFb(0);
-                        no.getDir().setFb(0);
-                        no.getEsq().setFb(-1);
+                        if (raiz.getDir() != null) if (no.getDir() != null) no.getDir().setFb(0);
+                        if (raiz.getEsq() != null) if (no.getEsq() != null) no.getEsq().setFb(-1);
                     }
                 }
         }
