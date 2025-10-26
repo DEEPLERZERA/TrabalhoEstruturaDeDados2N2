@@ -1,4 +1,6 @@
+/** Inserção iterativa na ABB para evitar recursão profunda. */
 public final class ABBUtil {
+    /** Insere um MHRecord na ABB, evitando duplicata. */
     public static void abbInsertIter(ABB<MHRecord> abb, MHRecord r){
         Node novo=new Node(r);
         if(abb.getRaiz()==null){ abb.setRaiz(novo); return; }
@@ -13,7 +15,7 @@ public final class ABBUtil {
                 if(cur.getFilhoDir()==null){ cur.setFilhoDir(novo); return; }
                 cur=cur.getFilhoDir();
             } else {
-                return;
+                return; // já existe
             }
         }
     }

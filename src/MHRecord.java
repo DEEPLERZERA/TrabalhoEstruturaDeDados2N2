@@ -1,7 +1,8 @@
 import java.util.Arrays;
 
+/** Registro do dataset. Comparable por (country, rowId). */
 public class MHRecord implements Comparable<MHRecord> {
-    public static long COMPARE_COUNT = 0L;
+    public static long COMPARE_COUNT = 0L; // métricas de comparações
 
     public final String gender, country, occupation, selfEmployed, familyHistory, treatment,
             daysIndoors, habitsChange, mentalHealthHistory, increasingStress, moodSwings,
@@ -16,6 +17,7 @@ public class MHRecord implements Comparable<MHRecord> {
         this.mentalHealthInterview=a[14]; this.careOptions=a[15]; this.rowId=rowId;
     }
 
+    /** Heurística simples de “risco” para análises. */
     public int riskScore(){
         int s=0;
         s += "Yes".equalsIgnoreCase(increasingStress)?2:("Maybe".equalsIgnoreCase(increasingStress)?1:0);
@@ -32,6 +34,7 @@ public class MHRecord implements Comparable<MHRecord> {
         return s;
     }
 
+    /** Ordenação: country → rowId. Também conta comparações (para métricas). */
     @Override
     public int compareTo(MHRecord o){
         COMPARE_COUNT++;
@@ -40,8 +43,10 @@ public class MHRecord implements Comparable<MHRecord> {
         return Integer.compare(this.rowId,o.rowId);
     }
 
+    /** Zera o contador de comparações (usado nos experimentos). */
     public static void resetCounter(){ COMPARE_COUNT=0L; }
 
+    /** Fábrica para inserção manual. */
     public static MHRecord makeForInsert(int rowId, String gender, String country, String occupation,
         String selfEmp, String familyHist, String treatment, String daysInd, String habitsChange,
         String mentalHist, String stress, String mood, String socialWeak, String coping, String workInt,
@@ -50,6 +55,7 @@ public class MHRecord implements Comparable<MHRecord> {
         return new MHRecord(a,rowId);
     }
 
+    /** Fábrica para limites (range queries). */
     public static MHRecord makeBound(String country, int rowId){
         String[] a=new String[16];
         Arrays.fill(a,"");

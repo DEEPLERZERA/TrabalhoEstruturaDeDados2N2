@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 
+/** Lê o CSV, constrói ABB/AVL e devolve métricas da fase de inserção. */
 public class MHLoader {
     public static class Loaded {
         public final ABB<MHRecord> abb;
@@ -16,11 +17,13 @@ public class MHLoader {
         java.util.List<MHRecord> records = readAll(csvPath);
         java.util.Collections.shuffle(records,new java.util.Random(42));
 
+        // ABB — inserção iterativa
         ABB<MHRecord> abb = new ABB<>();
         MHRecord.resetCounter();
         for(MHRecord r:records) ABBUtil.abbInsertIter(abb,r);
         long cAbb = MHRecord.COMPARE_COUNT;
 
+        // AVL — zera métricas e insere
         AvlMetrics.reset();
         MHRecord.resetCounter();
         AVL avl=null;
@@ -36,7 +39,7 @@ public class MHLoader {
     private static java.util.List<MHRecord> readAll(String csvPath) throws Exception {
         java.util.List<MHRecord> list=new java.util.ArrayList<>(200000);
         try(BufferedReader br=new BufferedReader(new FileReader(csvPath))){
-            String header=br.readLine();
+            String header=br.readLine(); // descarta
             String line; int row=0;
             while((line=br.readLine())!=null){
                 String[] t = line.split(",",-1);

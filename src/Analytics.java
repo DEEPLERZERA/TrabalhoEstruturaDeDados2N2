@@ -2,7 +2,9 @@ import java.util.*;
 import java.nio.file.*;
 import java.io.*;
 
+/** Gera CSVs de análises exploratórias (grava out_*.csv na raiz). */
 public class Analytics {
+    /** Utilitário de escrita CSV simples. */
     private static void writeCsv(Path p, java.util.List<String[]> rows) throws Exception {
         try(BufferedWriter w=Files.newBufferedWriter(p)){
             for(String[] r:rows){
@@ -15,6 +17,7 @@ public class Analytics {
         }
     }
 
+    /** N, tratados e taxa por (País, Gênero). */
     public static void treatmentByCountryGender(java.util.List<MHRecord> recs) throws Exception {
         Map<String,Map<String,int[]>> m=new TreeMap<>();
         for(MHRecord r:recs){
@@ -22,8 +25,8 @@ public class Analytics {
             Map<String,int[]> g=m.get(r.country);
             g.computeIfAbsent(r.gender,k->new int[2]);
             int[] a=g.get(r.gender);
-            a[0]++;
-            if("Yes".equalsIgnoreCase(r.treatment)) a[1]++;
+            a[0]++; // N
+            if("Yes".equalsIgnoreCase(r.treatment)) a[1]++; // tratados
         }
         java.util.List<String[]> out=new ArrayList<>();
         out.add(new String[]{"Country","Gender","N","Treated","Rate"});
@@ -35,6 +38,7 @@ public class Analytics {
         writeCsv(Paths.get("out_treatment_country_gender.csv"), out);
     }
 
+    /** Distribuição de DaysIndoors por país (contagens por bucket). */
     public static void daysIndoorsByCountry(java.util.List<MHRecord> recs) throws Exception {
         String[] b={"Go out Every day","1-14 days","15-30 days","31-60 days","More than 2 months"};
         Map<String,int[]> m=new TreeMap<>();
@@ -47,11 +51,13 @@ public class Analytics {
         out.add(new String[]{"Country","GoOutEveryDay","1_14","15_30","31_60","MoreThan2Months"});
         for(var e:m.entrySet()){
             int[] a=e.getValue();
-            out.add(new String[]{e.getKey(),String.valueOf(a[0]),String.valueOf(a[1]),String.valueOf(a[2]),String.valueOf(a[3]),String.valueOf(a[4])});
+            out.add(new String[]{e.getKey(),String.valueOf(a[0]),String.valueOf(a[1]),
+                                 String.valueOf(a[2]),String.valueOf(a[3]),String.valueOf(a[4])});
         }
         writeCsv(Paths.get("out_days_country.csv"), out);
     }
 
+    /** Média de riskScore por país (+ N). */
     public static void riskByCountry(java.util.List<MHRecord> recs) throws Exception {
         Map<String,int[]> m=new TreeMap<>();
         for(MHRecord r:recs){
@@ -68,6 +74,7 @@ public class Analytics {
         writeCsv(Paths.get("out_risk_country.csv"), out);
     }
 
+    /** Efeito de histórico familiar na taxa de tratamento (tabela 2x2). */
     public static void familyHistoryEffectOnTreatment(java.util.List<MHRecord> recs) throws Exception {
         int[][] m=new int[2][2];
         for(MHRecord r:recs){
@@ -81,11 +88,13 @@ public class Analytics {
         for(int i=0;i<2;i++){
             int N=m[i][0]+m[i][1];
             double rate=N==0?0.0:(m[i][1]*1.0/N);
-            out.add(new String[]{rows[i],String.valueOf(m[i][0]),String.valueOf(m[i][1]),String.format(java.util.Locale.US,"%.4f",rate)});
+            out.add(new String[]{rows[i],String.valueOf(m[i][0]),String.valueOf(m[i][1]),
+                                 String.format(java.util.Locale.US,"%.4f",rate)});
         }
         writeCsv(Paths.get("out_family_treatment.csv"), out);
     }
 
+    /** Matriz Stress x Mood (proporções por linha). */
     public static void stressMoodMatrix(java.util.List<MHRecord> recs) throws Exception {
         String[] stress={"No","Maybe","Yes"};
         String[] mood={"Low","Medium","High"};

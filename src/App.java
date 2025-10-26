@@ -2,6 +2,7 @@ import java.nio.file.*;
 import java.io.*;
 import java.util.*;
 
+/** Console app com menu para ABB×AVL e análises. */
 public class App {
     private static MHLoader.Loaded L=null;
     private static String CSV_PATH = Paths.get("data","mental_health_clean.csv").toString();
@@ -63,7 +64,6 @@ public class App {
         L = MHLoader.load(CSV_PATH);
         removedIds.clear();
         System.out.println("Registros carregados: "+L.records.size());
-
         try(BufferedWriter w=Files.newBufferedWriter(Paths.get("rotations.csv"))){
             w.write("phase,rotations_single,rotations_events\n");
             w.write("load_inserts,"+L.rotSingle_insert+","+L.rotEvents_insert+"\n");
@@ -103,11 +103,9 @@ public class App {
         int pct=in.isEmpty()?10:Integer.parseInt(in);
         int cut=Math.max(1,(int)Math.round(n*(pct/100.0)));
         java.util.List<MHRecord> toRemove=sampleEvenly(L.records,cut,true);
-
         long preS=AvlMetrics.rotationsSingle, preE=AvlMetrics.rotationsEvents;
         Experiments.Result r=Experiments.runRemove(L,toRemove);
         long dS=AvlMetrics.rotationsSingle-preS, dE=AvlMetrics.rotationsEvents-preE;
-
         try(BufferedWriter w=Files.newBufferedWriter(Paths.get("rotations.csv"), java.nio.file.StandardOpenOption.APPEND)){
             w.write("removals,"+dS+","+dE+"\n");
         }
@@ -152,7 +150,6 @@ public class App {
         String work=InputUtil.oneOf("WorkInterest","No","Yes","No","Maybe");
         String interview=InputUtil.oneOf("MentalHealthInterview","No","Yes","No","Maybe");
         String care=InputUtil.oneOf("CareOptions","No","Yes","No","Maybe");
-
         MHRecord rec=MHRecord.makeForInsert(rowId,gender,country,occupation,selfEmp,familyHist,treatment,daysInd,habits,mentalHist,stress,mood,socialWeak,coping,work,interview,care);
         ABBUtil.abbInsertIter(L.abb,rec);
         L.avl.insereAVL(rec);
